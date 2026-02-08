@@ -1,0 +1,173 @@
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #2C3E50; /* deep blue */
+  color: #ECF0F1; /* off-white */
+  flex-shrink: 0;
+  padding: 30px 20px;
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Sidebar links */
+.sidebar nav a {
+  color: #ECF0F1; /* off-white */
+  text-decoration: none;
+}
+.sidebar nav a:hover {
+  color: #3498DB; /* vivid blue */
+  text-decoration: underline;
+}
+
+/* Accordion buttons */
+.accordion-button {
+  background: #34495E; /* muted blue-gray */
+  color: #ECF0F1;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  margin-top: 5px;
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+.accordion-button.active {
+  background: #3498DB; /* vivid blue */
+}
+
+/* Main content */
+.main-content {
+  margin-left: 270px;
+  padding: 30px;
+  max-width: 900px;
+  background-color: #FDFEFE; /* light ivory */
+}
+
+/* Divider lines */
+hr {
+  border: none;
+  border-top: 1px solid #BDC3C7; /* soft gray */
+  margin: 10px 0;
+}
+
+/* Links / buttons in content */
+a.cv-button {
+  background-color: #1ABC9C; /* teal */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+a.cv-button:hover {
+  background-color: #16A085; /* darker teal */
+}
+
+.header-section {
+  display: flex;              /* arrange children in a row */
+  flex-wrap: nowrap;          /* do NOT wrap by default */
+  align-items: center;        /* vertical alignment */
+  justify-content: flex-start;/* align left */
+  gap: 30px;                  /* space between image and info */
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.header-left {
+  flex: 0 0 200px;            /* fixed width for image */
+}
+
+.profile-pic {
+  width: 180px;
+  border-radius: 10px;
+  display: block;
+}
+
+.header-right {
+  flex: 1;                    /* takes remaining horizontal space */
+  min-width: 250px;            /* prevent it from shrinking too much */
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;   /* stack image on top, info below */
+    align-items: flex-start;
+  }
+  .header-right {
+    min-width: 100%;
+  }
+  .header-right h1 {
+    margin-top: 15px;
+  }
+}
+.contact-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.contact-list li {
+  display: flex;            /* arrange label and value in a row */
+  align-items: flex-start;  /* top align multi-line values */
+  margin-bottom: 10px;
+}
+
+.contact-list li strong {
+  width: 70px;             /* fixed width for all labels */
+  flex-shrink: 0;           /* prevent shrinking */
+  display: inline-block;    
+}
+
+/* Reset default spacing for all headings and sections */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Section container */
+section {
+  margin: 0;
+  padding: 0;
+}
+
+/* Main section headings (e.g., Employment, Education) */
+.section-title {
+  font-size: 1.4em;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-top: 10px;       /* small space above section */
+  margin-bottom: 8px;     /* small space below section */
+  border-bottom: 1px solid #ccc; /* optional thin line for style */
+  padding-bottom: 4px;    /* small space after line */
+}
+
+/* Subsection headings (e.g., Job Title, Degree) */
+.subsection-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+/* Reduce spacing for paragraphs and lists immediately after headings */
+.section-title + p,
+.section-title + ul,
+.subsection-title + p,
+.subsection-title + ul {
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+/* Lists */
+ul {
+  list-style-type: square;
+  padding-left: 20px;  /* indent */
+}
+
+ul li {
+  margin-bottom: 4px;  /* spacing between list items */
+}
