@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sampling Distribution of X̄</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 30px; }
+    .controls { margin-bottom: 20px; }
+    label { display: block; margin: 8px 0; }
+    canvas { max-width: 900px; margin: auto; }
+    #zFormula { font-size: 18px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h2>Sampling Distribution: P(X̄ ≤ x̄)</h2>
+
+<div class="controls">
+    <label>
+        Population Mean (μ):
+        <input type="range" id="mean" min="-10" max="10" step="0.1" value="0">
+        <span id="meanValue">0</span>
+    </label>
+
+    <label>
+        Population Std Dev (σ):
+        <input type="range" id="std" min="0.5" max="5" step="0.1" value="1">
+        <span id="stdValue">1</span>
+    </label>
+
+    <label>
+        Sample Size (n):
+        <input type="range" id="nValue" min="1" max="100" step="1" value="1">
+        <span id="nDisplay">1</span>
+    </label>
+
+    <label>
+        x̄ value:
+        <input type="range" id="xValue" min="-10" max="10" step="0.1" value="0">
+        <span id="xDisplay">0</span>
+    </label>
+</div>
+
+<h3 id="probabilityDisplay">P(X̄ ≤ x̄) = 0.5000</h3>
+
+<canvas id="normalChart" width="600" height="300"></canvas>
+
+<div id="zFormula"></div>
+
+<canvas id="zChart" width="260" height="170"></canvas>
+
+<script>
+function normalPDF(x, mean, std) {
+    return (1 / (std * Math.sqrt(2 * Math.PI))) *
+        Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
+}
+
+function normalCDF(x, mean, std) {
+    let a = mean - 6*std;
+    let b = x;
+    let n = 1000;
+    let h = (b - a) / n;
+    let sum = normalPDF(a, mean, std) + normalPDF(b, mean, std);
+    for (let i = 1; i < n; i++) {
+        let xi = a + i * h;
+        sum += normalPDF(xi, mean, std) * (i % 2 === 0 ? 2 : 4);
+    }
+    return (h / 3) * sum;
+}
+
+const ctx = document.getElementById('normalChart').getContext('2d');
+let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        datasets: [
+            { label: 'X̄ PDF', borderColor: 'red', borderWidth: 2, fill: false, data: [], pointRadius: 0 },
+            { label: 'Shaded Area', backgroundColor: 'rgba(0,0,255,0.3)', fill: true, data: [], pointRadius: 0 }
+        ]
+    },
+    options: {
+        responsive: true,
+        parsing: false,
+        animation: false,
+        scales: {
+            x: { type: 'linear', min: -10, max: 10 },
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+const zCtx = document.getElementById('zChart').getContext('2d');
+let zChart = new Chart(zCtx, {
+    type: 'line',
+    data: {
+        datasets: [
+            { label: 'Z PDF', borderColor: 'green', borderWidth: 2, fill: false, data: [], pointRadius: 0 },
+            { label: 'Shaded Area', backgroundColor: 'rgba(0,0,255,0.3)', fill: true, data: [], pointRadius: 0 }
+        ]
+    },
+    options: {
+        responsive: true,
+        parsing: false,
+        animation: false,
+        scales: { x: { type: 'linear', min: -4, max: 4 }, y: { beginAtZero: true } }
+    }
+});
+
+function updateChart() {
+    let mean = parseFloat(document.getElementById("mean").value);
+    let sigma = parseFloat(document.getElementById("std").value);
+    let n = parseInt(document.getElementById("nValue").value);
+    let xBar = parseFloat(document.getElementById("xValue").value);
+
+    let stdError = sigma / Math.sqrt(n);
+
+    document.getElementById("meanValue").innerText = mean;
+    document.getElementById("stdValue").innerText = sigma;
+    document.getElementById("nDisplay").innerText = n;
+    document.getElementById("xDisplay").innerText = xBar;
+
+    let data = [];
+    let shaded = [];
+    for (let x = -10; x <= 10; x += 0.05) {
+        let y = normalPDF(x, mean, stdError);
+        data.push({x: x, y: y});
+        if (x <= xBar+0.025) shaded.push({x: x, y: y});
+    }
+
+    chart.data.datasets[0].data = data;
+    chart.data.datasets[1].data = shaded;
+
+    let prob = normalCDF(xBar, mean, stdError);
+    document.getElementById("probabilityDisplay").innerText =
+        "P(X̄ ≤ x̄) = " + prob.toFixed(4);
+
+    chart.update();
+
+    let z = (xBar - mean) / stdError;
+
+    document.getElementById("zFormula").innerHTML =
+    `Z = 
+     <span style="display:inline-block; vertical-align: middle;">
+        <span style="border-bottom:1px solid; padding:0 4px;">
+            x̄ - μ
+        </span><br>
+        <span style="display:block; text-align:center;">
+            σ / √n
+        </span>
+     </span>
+     = 
+     <span style="display:inline-block; vertical-align: middle;">
+        <span style="border-bottom:1px solid; padding:0 4px;">
+            ${xBar.toFixed(2)} - (${mean.toFixed(2)})
+        </span><br>
+        <span style="display:block; text-align:center;">
+            ${sigma.toFixed(2)} / √${n.toFixed(2)}
+        </span>
+     </span>
+     =
+     ${z.toFixed(3)}`;
+
+    let zData = [];
+    let zShaded = [];
+    for (let zi = -4; zi <= 4; zi += 0.05) {
+        let y = normalPDF(zi, 0, 1);
+        zData.push({x: zi, y: y});
+        if (zi <= z) zShaded.push({x: zi, y: y});
+    }
+
+    zChart.data.datasets[0].data = zData;
+    zChart.data.datasets[1].data = zShaded;
+    zChart.update();
+}
+
+document.getElementById("mean").addEventListener("input", updateChart);
+document.getElementById("std").addEventListener("input", updateChart);
+document.getElementById("nValue").addEventListener("input", updateChart);
+document.getElementById("xValue").addEventListener("input", updateChart);
+
+updateChart();
+</script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Confidence Interval with Sampling - Two Charts</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+
+<style>
+body { font-family: Arial; text-align:center; margin:30px;}
+label { display:block; margin:8px 0;}
+canvas { max-width:900px; margin:auto 0 40px 0; display:block;}
+button { padding:8px 14px; margin-top:10px; cursor:pointer;}
+#message {color:red; font-weight:bold; margin:10px 0;}
+</style>
+</head>
+<body>
+
+<h2>True Sampling Distribution</h2>
+<label>
+True Mean (μ):
+<input type="range" id="mu" min="-10" max="10" step="0.1" value="0">
+<span id="muVal">0</span>
+</label>
+
+<label>
+Population Std Dev (σ):
+<input type="range" id="sigma" min="0.5" max="10" step="0.1" value="5">
+<span id="sigmaVal">1</span>
+</label>
+
+<label>
+Sample Size (n):
+<input type="range" id="n" min="1" max="50" step="1" value="25">
+<span id="nVal">25</span>
+</label>
+
+<label>
+Significance Level (α):
+<input type="range" id="alpha" min="0.01" max="0.10" step="0.01" value="0.05">
+<span id="alphaVal">0.05</span>
+</label>
+
+<canvas id="trueChart" width="900" height="150"></canvas>
+
+<h2>Sample & Estimated Distribution</h2>
+<button onclick="sampleXbar()">Sample x̄</button>
+
+<label>
+Estimated Mean (μ-hat):
+<input type="range" id="muhat" min="-10" max="10" step="0.1" value="0">
+<span id="muhatVal">0</span>
+</label>
+
+<h3 id="ciDisplay"></h3>
+<div id="message"></div>
+
+<canvas id="sampleChart" width="900" height="150"></canvas>
+
+<script>
+let generatedXbar = null;
+let EstimatedPlot=null;
+let lowerCI = null;
+let upperCI = null;
+
+function randomNormal(mean, std){
+    let u1=Math.random();
+    let u2=Math.random();
+    let z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    return mean+z*std;
+}
+
+function normalPDF(x, mean, std){
+    return (1/(std*Math.sqrt(2*Math.PI)))*Math.exp(-0.5*((x-mean)/std)**2);
+}
+
+function zCritical(alpha){
+    let p = 1-alpha/2;
+    return Math.sqrt(2)*inverseErf(2*p-1);
+}
+
+function inverseErf(x){
+    let a=0.147;
+    let ln=Math.log(1-x*x);
+    let part1=2/(Math.PI*a)+ln/2;
+    let part2=ln/a;
+    return Math.sign(x)*Math.sqrt(Math.sqrt(part1*part1-part2)-part1);
+}
+
+// ------------------- TRUE DISTRIBUTION CHART -------------------
+const trueCtx = document.getElementById("trueChart").getContext("2d");
+let trueChart = new Chart(trueCtx,{
+    type:'line',
+    data:{
+        datasets:[
+            {label:'True Sampling Dist', borderColor:'blue', borderWidth:2, fill:false, data:[], pointRadius:0},
+            {label:'1-α Region', backgroundColor:'rgba(0,0,255,0.25)', borderWidth:0, fill:true, data:[], pointRadius:0}
+        ]
+    },
+    options:{
+        responsive:true,
+        parsing:false,
+        animation:false,
+        scales:{x:{type:'linear', min:-10, max:10}, y:{beginAtZero:true}}
+    }
+});
+
+// ------------------- SAMPLE & ESTIMATED CHART -------------------
+const sampleCtx = document.getElementById("sampleChart").getContext("2d");
+let sampleChart = new Chart(sampleCtx,{
+    type:'line',
+    data:{
+        datasets:[
+            {label:'Sampling Dist (μ-hat)', borderColor:'red', borderWidth:2, fill:false, data:[], pointRadius:0},
+            {label:'1-α Region', backgroundColor:'rgba(255,0,0,0.25)', borderWidth:0, fill:true, data:[], pointRadius:0}
+        ]
+    },
+    options:{
+        responsive:true,
+        parsing:false,
+        animation:false,
+        scales:{x:{type:'linear', min:-10, max:10}, y:{beginAtZero:true}},
+        plugins:{annotation:{annotations:{}}}
+    }
+});
+
+// ------------------- FUNCTIONS -------------------
+function sampleXbar(){
+    let mu=parseFloat(document.getElementById("mu").value);
+    let sigma=parseFloat(document.getElementById("sigma").value);
+    let n=parseInt(document.getElementById("n").value);
+    let alpha=parseFloat(document.getElementById("alpha").value);
+
+    let se=sigma/Math.sqrt(n);
+    generatedXbar=randomNormal(mu,se);
+
+    let z=zCritical(alpha);
+    let margin=z*se;
+    lowerCI=generatedXbar-margin;
+    upperCI=generatedXbar+margin;
+
+    EstimatedPlot=null;
+    document.getElementById("message").innerText="";
+    updateCharts();
+}
+
+function updateCharts(){
+    let mu=parseFloat(document.getElementById("mu").value);
+    let sigma=parseFloat(document.getElementById("sigma").value);
+    let n=parseInt(document.getElementById("n").value);
+    let alpha=parseFloat(document.getElementById("alpha").value);
+    let muhat=parseFloat(document.getElementById("muhat").value);
+    
+    document.getElementById("muVal").innerText = mu;
+    document.getElementById("sigmaVal").innerText = sigma;
+    document.getElementById("nVal").innerText = n;
+    document.getElementById("alphaVal").innerText = alpha;
+    document.getElementById("muhatVal").innerText = muhat;
+
+    let se=sigma/Math.sqrt(n);
+    let z=zCritical(alpha);
+    let margin=z*se;
+
+    // ---------------- TRUE CHART ----------------
+    let dataTrue=[], shadeTrue=[];
+    let lowerTrue=mu-margin, upperTrue=mu+margin;
+    for(let x=-10;x<=10;x+=0.05){
+        let y=normalPDF(x,mu,se);
+        dataTrue.push({x:x,y:y});
+        if(x>=lowerTrue && x<=upperTrue) shadeTrue.push({x:x,y:y});
+    }
+    trueChart.data.datasets[0].data=dataTrue;
+    trueChart.data.datasets[1].data=shadeTrue;
+    trueChart.update();
+
+    // ---------------- SAMPLE CHART ----------------
+    if(generatedXbar!==null){
+        let dataHat=[], shadeHat=[];
+        let lowerHat=muhat-margin, upperHat=muhat+margin;
+        if(EstimatedPlot!==null){
+            for(let x=-10;x<=10;x+=0.05){
+                let y=normalPDF(x,muhat,se);
+                dataHat.push({x:x,y:y});
+                if(x>=lowerHat && x<=upperHat) shadeHat.push({x:x,y:y});
+            }
+        }
+        sampleChart.data.datasets[0].data=dataHat;
+        sampleChart.data.datasets[1].data=shadeHat;
+
+        sampleChart.options.plugins.annotation.annotations={
+            xbarLine:{
+                type:'line',
+                xMin:generatedXbar,
+                xMax:generatedXbar,
+                borderColor:'black',
+                borderDash:[6,6]
+            },
+            lowerCI:{
+                type:'line',
+                xMin:lowerCI,
+                xMax:lowerCI,
+                borderColor:'green',
+                borderDash:[6,6]
+            },
+            upperCI:{
+                type:'line',
+                xMin:upperCI,
+                xMax:upperCI,
+                borderColor:'green',
+                borderDash:[6,6]
+            }
+        };
+        document.getElementById("ciDisplay").innerText=
+            `CI based on sampled x̄: [ ${lowerCI.toFixed(3)} , ${upperCI.toFixed(3)} ]`;
+    } else {
+        sampleChart.data.datasets[0].data=[];
+        sampleChart.data.datasets[1].data=[];
+        sampleChart.options.plugins.annotation.annotations={};
+        document.getElementById("ciDisplay").innerText="";
+    }
+    sampleChart.update();
+}
+
+// ------------------- EVENT LISTENERS -------------------
+["mu","sigma","n","alpha"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",()=>{
+        generatedXbar=null; // reset sample chart
+        document.getElementById("message").innerText="";
+        updateCharts();
+    });
+});
+document.getElementById("muhat").addEventListener("input",()=>{
+        EstimatedPlot=muhat; // reset sample chart
+        document.getElementById("message").innerText="";
+        updateCharts();
+    });
+
+document.getElementById("alpha").addEventListener("input",updateCharts);
+
+document.getElementById("muhat").addEventListener("input",()=>{
+    if(generatedXbar!==null){
+        let muhat=parseFloat(document.getElementById("muhat").value);
+        if(muhat<lowerCI){
+            document.getElementById("muhat").value=lowerCI.toFixed(3);
+            document.getElementById("message").innerText=`Minimum value allowed: ${lowerCI.toFixed(3)}`;
+        } else if(muhat>upperCI){
+            document.getElementById("muhat").value=upperCI.toFixed(3);
+            document.getElementById("message").innerText=`Maximum value allowed: ${upperCI.toFixed(3)}`;
+        } else {
+            document.getElementById("message").innerText="";
+        }
+        updateCharts();
+    }
+});
+
+// Initial draw
+updateCharts();
+</script>
+
+</body>
+</html>
