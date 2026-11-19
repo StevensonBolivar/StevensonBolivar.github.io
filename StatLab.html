@@ -1,115 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Statistics Lab - Interactive Simulations</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logistic Regression</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    height: 100vh;
-    display: flex;
-}
-.panel {
-    width: 300px;
-    background-color: #f0f0f0;
-    padding: 20px;
-    box-sizing: border-box;
-    border-right: 2px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* menu top, footer bottom */
-}
-.panel .announcement {
-    font-size: 14px;
-    margin-bottom: 20px;
-    line-height: 1.4;
-}
-.panel .menu {
-    display: flex;
-    flex-direction: column;
-}
-.panel h1 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    text-align: center;
-}
-.panel button {
-    margin: 5px 0;
-    padding: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    background-color: #ddd;
-    transition: background-color 0.2s;
-}
-.panel button:hover { background-color: #ccc; }
-.panel button.active { background-color: #007BFF; color: white; }
-.panel .footer {
-    font-size: 14px;
-    text-align: center;
-    margin-top: 20px;
-}
-.panel .footer a {
-    text-decoration: none;
-    color: #007BFF;
-}
-.panel .footer a:hover {
-    text-decoration: underline;
-}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#2d3b45;font:16px/1.5 Arial,Helvetica,sans-serif}main{max-width:850px;margin:48px auto;padding:0 22px}h1{font-size:28px;font-weight:400;margin:0 0 28px}.module{border:1px solid #c7cdd1;border-radius:3px;margin:0 0 24px;overflow:hidden}h2{font-size:16px;margin:0;padding:13px 18px;background:#f2f2f2;border-bottom:1px solid #c7cdd1}.row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:17px 20px;color:#0875b7;text-decoration:none;border-bottom:1px solid #d8dce0;min-height:59px}.row:last-child{border-bottom:0}.row:hover{background:#f4f8fa;text-decoration:underline}.row:focus-visible{outline:3px solid #0875b7;outline-offset:-4px}.symbol{font-size:18px;color:#64717a;flex-shrink:0}@media(max-width:500px){main{margin-top:28px;padding:0 16px}h1{font-size:25px}.row{padding:15px 17px}}
 
-.content { flex-grow: 1; padding: 0; }
-iframe { width: 100%; height: 100%; border: none; }
+.reference table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}.reference thead{background:#f8f9fa}.reference th,.reference td{text-align:left;vertical-align:top;padding:13px 15px;border-bottom:1px solid #d8dce0}.reference thead th{font-weight:600}.reference tbody th{font-weight:500;width:25%}.reference tbody td:nth-child(2){width:39%}.reference tbody tr:last-child>*{border-bottom:0}.table-note{font-size:13px;line-height:1.6;margin:0;padding:13px 15px;color:#48555f}.table-wrap{overflow-x:auto}.table-wrap:focus-visible{outline:3px solid #0875b7;outline-offset:-3px}math{font-size:1.1em;line-height:1.7;white-space:nowrap}td br+math{margin-top:7px}@media(max-width:600px){.reference table{min-width:700px}.reference th,.reference td{padding:12px}.table-note{padding:12px}}
 </style>
 </head>
 <body>
+<main>
+<h1>Logistic Regression</h1>
+<section class="module" aria-labelledby="materials"><h2 id="materials">Materials</h2>
+<a class="row" href="downloads/Logistic_Regression_Classroom.pdf" download><span>Slides</span><span class="symbol" aria-hidden="true">↓</span></a>
+<a class="row" href="downloads/Logistic_Regression_Student_Code.R" download><span>R code</span><span class="symbol" aria-hidden="true">↓</span></a>
+</section>
+<section class="module" aria-labelledby="applets"><h2 id="applets">Interactive applets</h2>
+<a class="row" href="https://www.interactive-ml.com/logistic-regression.html" target="_blank" rel="noopener noreferrer"><span>Logit — one variable</span><span class="symbol" aria-hidden="true">↗</span></a>
+<a class="row" href="https://www.desmos.com/3d" target="_blank" rel="noopener noreferrer"><span>Logit — two variables</span><span class="symbol" aria-hidden="true">↗</span></a>
+</section>
 
-<div class="panel">
-
-    <!-- Menu buttons -->
-    <div class="menu">
-        <h1>Statistics Lab</h1>
-        <button id="btnStandard" class="active">Standard Normal Distribution</button>
-        <button id="btnXbar">Sampling Distribution of X&#772</button>
-        <button id="btnCI">Confidence Interval Exploration (mu-hat)</button>
-    </div>
-    <!-- Pedagogical announcement -->
-    <div class="announcement">
-        <strong>Welcome to this applet.</strong><br><br>
-    Here, you can explore the <strong>Standard Normal Distribution</strong>, the <strong>Sampling Distribution of X&#772;</strong>, and <strong>Confidence Intervals</strong>.<br><br>
-    By adjusting the parameters, you can <strong>see how distributions and intervals change</strong>, helping you develop a clear understanding of key statistical concepts.<br><br>
-    We encourage you to experiment and reflect on your observations. <strong>Office hours are available</strong> if you want to discuss your observations or clarify concepts.
-    </div>
-    <!-- Footer with name and link -->
-    <div class="footer">
-        Developed by <a href="index.html" target="_blank">Stevenson Bol&#237;var</a>
-    </div>
-</div>
-
-<div class="content">
-    <iframe id="labFrame" src="standard_normal.html"></iframe>
-</div>
-
-<script>
-const frame = document.getElementById('labFrame');
-
-const buttons = {
-    btnStandard: "standard_normal.html",
-    btnXbar: "xbar_distribution.html",
-    btnCI: "confidence_interval.html"
-};
-
-for (let btnId in buttons) {
-    document.getElementById(btnId).addEventListener('click', () => {
-        frame.src = buttons[btnId];
-        for (let b in buttons) {
-            document.getElementById(b).classList.remove('active');
-        }
-        document.getElementById(btnId).classList.add('active');
-    });
-}
-</script>
-
+<section class="module reference" aria-labelledby="log-exp"><h2 id="log-exp">Log and exponential properties</h2>
+<p class="table-note">Here, log is the natural logarithm and exp(u) = e<sup>u</sup>. The symbol × means multiplication. Let a, b &gt; 0; u, v, and c may be any real numbers.</p>
+<div class="table-wrap" role="region" aria-label="Log and exponential properties table" tabindex="0"><table><thead><tr><th scope="col">Property</th><th scope="col">Rule</th><th scope="col">Example / reminder</th></tr></thead><tbody><tr><th scope="row">Undo a logarithm</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mi mathvariant="normal">log</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>)</mo><mo>=</mo><mi>a</mi></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>4</mn><mo>)</mo><mo>)</mo><mo>=</mo><mn>4</mn></mrow></math></td></tr><tr><th scope="row">Undo an exponential</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mi mathvariant="normal">exp</mi><mo>(</mo><mi>u</mi><mo>)</mo><mo>)</mo><mo>=</mo><mi>u</mi></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mi mathvariant="normal">exp</mi><mo>(</mo><mn>2</mn><mo>)</mo><mo>)</mo><mo>=</mo><mn>2</mn></mrow></math></td></tr><tr><th scope="row">Log of a quotient</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mfrac><mi>a</mi><mi>b</mi></mfrac><mo>)</mo><mo>=</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>−</mo><mi mathvariant="normal">log</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mfrac><mn>8</mn><mn>2</mn></mfrac><mo>)</mo><mo>=</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>8</mn><mo>)</mo><mo>−</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>2</mn><mo>)</mo></mrow></mrow></math></td></tr><tr><th scope="row">Log of a product</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mrow><mi>a</mi><mo>×</mo><mi>b</mi></mrow><mo>)</mo><mo>=</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>+</mo><mi mathvariant="normal">log</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>6</mn><mo>)</mo><mo>=</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>2</mn><mo>)</mo><mo>+</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>3</mn><mo>)</mo></mrow></mrow></math></td></tr><tr><th scope="row">Log of a power</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><msup><mi>a</mi><mi>c</mi></msup><mo>)</mo><mo>=</mo><mrow><mi>c</mi><mo>×</mo><mi mathvariant="normal">log</mi><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><msup><mn>4</mn><mn>2</mn></msup><mo>)</mo><mo>=</mo><mrow><mn>2</mn><mo>×</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>4</mn><mo>)</mo></mrow></mrow></math></td></tr><tr><th scope="row">Add in the exponent</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mrow><mi>u</mi><mo>+</mo><mi>v</mi></mrow><mo>)</mo><mo>=</mo><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mi>u</mi><mo>)</mo><mo>×</mo><mi mathvariant="normal">exp</mi><mo>(</mo><mi>v</mi><mo>)</mo></mrow></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>3</mn><mo>)</mo><mo>+</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>2</mn><mo>)</mo></mrow><mo>)</mo><mo>=</mo><mn>6</mn></mrow></math></td></tr><tr><th scope="row">Subtract in the exponent</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mrow><mi>u</mi><mo>−</mo><mi>v</mi></mrow><mo>)</mo><mo>=</mo><mfrac><mi mathvariant="normal">exp</mi><mo>(</mo><mi>u</mi><mo>)</mo><mi mathvariant="normal">exp</mi><mo>(</mo><mi>v</mi><mo>)</mo></mfrac></mrow></math></td><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>8</mn><mo>)</mo><mo>−</mo><mi mathvariant="normal">log</mi><mo>(</mo><mn>2</mn><mo>)</mo></mrow><mo>)</mo><mo>=</mo><mn>4</mn></mrow></math></td></tr><tr><th scope="row">Reference values</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mn>1</mn><mo>)</mo><mo>=</mo><mn>0</mn></mrow></math><br><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mn>0</mn><mo>)</mo><mo>=</mo><mn>1</mn></mrow></math></td><td>Odds of 1 correspond to log-odds of 0.</td></tr><tr><th scope="row">Signs and range</th><td><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mrow><mi mathvariant="normal">exp</mi><mo>(</mo><mi>u</mi><mo>)</mo><mo>&gt;</mo><mn>0</mn></mrow></mrow></math><br><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mrow><mi mathvariant="normal">log</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&lt;</mo><mn>0</mn></mrow></mrow></math> if <math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mrow><mn>0</mn><mo>&lt;</mo><mi>a</mi><mo>&lt;</mo><mn>1</mn></mrow></mrow></math></td><td>Exponentials are always positive. Logs of numbers below 1 are negative.</td></tr></tbody></table></div>
+<p class="table-note">Remember: log(a + b) ≠ log(a) + log(b).</p>
+</section>
+</main>
 </body>
 </html>
